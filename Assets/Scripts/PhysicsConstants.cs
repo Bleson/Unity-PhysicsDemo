@@ -4,8 +4,8 @@ using System.Collections;
 public static class PhysicsConstants {
 
     public static float airDensity = 1.2f; // kg / m^3
-
     public static Vector2 gravity = new Vector2(0f, -9.81f); // m / s^2
+
 
     public static Vector2 GravitationForce(float mass)
     {
@@ -26,31 +26,34 @@ public static class PhysicsConstants {
     }
 
     //==============================================
-    //Air resistance
-
-    public static Vector2 AirResistance(float drag, float frontAreaOfObject, Vector2 velocity)
-    {
-        return new Vector2(AirResistance(drag, frontAreaOfObject,velocity.x),
-            AirResistance(drag, frontAreaOfObject, velocity.y));
-    }
-
-    public static float AirResistance(float drag, float frontAreaOfObject, float velocity)
-    {
-        if (velocity < 0f)
-        {
-            return Resistance(airDensity, -drag, frontAreaOfObject, velocity);
-        }
-        return Resistance(airDensity, drag, frontAreaOfObject, velocity);
+    //Resistance
+    public static Vector2 Resistance(float density, float drag, float frontAreaOfObject, Vector2 velocity) {
+        return new Vector2(Resistance(density, drag, frontAreaOfObject, velocity.x),
+            Resistance(density, drag, frontAreaOfObject, velocity.y));
     }
 
     public static float Resistance(float density, float drag, float frontAreaOfObject, float velocity)
     {
-        return -1f * 0.5f * density * drag * frontAreaOfObject * Mathf.Pow(velocity, 2);
+        return -1f * 0.5f * density * 
+            (drag * (velocity < 0f ? -1f : 1f)) * 
+            frontAreaOfObject * Mathf.Pow(velocity, 2);
     }
 
+
+    //==============================================
+    //Liquid Currency, F = Apv^2
+    public static Vector2 CurrentForce(float density, Vector2 velocityOfCurrent, float surfaceArea) {
+        return new Vector2(CurrentForce(density, velocityOfCurrent.x, surfaceArea),
+            CurrentForce(density, velocityOfCurrent.y, surfaceArea));
+    }
+
+    public static float CurrentForce(float density, float velocityOfCurrent, float surfaceArea) {
+        return surfaceArea * density * Mathf.Pow(velocityOfCurrent, 2) * (velocityOfCurrent > 0 ? 1f : -1f);
+    }
+    
     //==============================================
     //Momentum - NOT WORKING CORRECTLY
-    
+
     public static Vector2 Momentum(float mass, Vector2 velocity)
     {
         return mass * velocity;

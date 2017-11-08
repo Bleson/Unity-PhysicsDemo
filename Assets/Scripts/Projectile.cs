@@ -37,6 +37,10 @@ public class Projectile : MonoBehaviour {
         Disable();
     }
 
+    void OnTriggerEnter2D(Collider2D col) {
+
+    }
+
     void Disable()
     {
         Invoke("Destroy", timeToDestroy);

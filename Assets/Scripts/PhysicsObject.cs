@@ -4,7 +4,10 @@ using System.Collections.Generic;
 
 [RequireComponent(typeof(Collider2D), typeof(Rigidbody2D))]
 public class PhysicsObject : MonoBehaviour {
-    
+
+    public List<PhysicsMaterialComponent> affectingMaterials = 
+        new List<PhysicsMaterialComponent>();
+
     public Rigidbody2D rb2D;
 
     public float mass;
@@ -107,7 +110,16 @@ public class PhysicsObject : MonoBehaviour {
     void PhysicsUpdate(float timeStep)
     {
         ApplyForce(PhysicsConstants.GravitationForce(mass));
-        ApplyForce(PhysicsConstants.AirResistance(drag, frontArea, currentVelocity));
+        ApplyForce(PhysicsConstants.Resistance(PhysicsConstants.airDensity, drag, frontArea, currentVelocity));
+
+        if (affectingMaterials.Count > 0) {
+            foreach (var item in affectingMaterials) {
+                ApplyForce(PhysicsConstants.CurrentForce(
+                    item.density, item.currentForce / affectingMaterials.Count, frontArea));
+                ApplyForce(PhysicsConstants.Resistance(
+                    item.density / affectingMaterials.Count, drag, frontArea, currentVelocity));
+            }
+        }
 
         //Figure out forces on object
         //Apply acceleration & velocity depending on total forces
@@ -121,7 +133,6 @@ public class PhysicsObject : MonoBehaviour {
         Move(currentVelocity, timeStep);
         lastPosition = transform.position;
         
-        //Debug
         Debug.DrawRay(transform.position, avgAcceleration.normalized, Color.blue, Time.fixedDeltaTime);
     }
 
@@ -171,6 +182,8 @@ public class PhysicsObject : MonoBehaviour {
 
     void PrintCurrentVelo()
     {
-        print(Time.time + ": Speed:" + currentVelocity.magnitude);
+        //print(Time.time + ": Speed: " + currentVelocity.magnitude);
+        print(Time.time + ": Speed: " + currentVelocity.x 
+            + ", " + currentVelocity.y);
     }
 }

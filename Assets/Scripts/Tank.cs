@@ -23,7 +23,7 @@ public class Tank : MonoBehaviour {
 
     void Awake()
     {
-        cannonPivot = transform.FindChild("CannonPivot");
+        cannonPivot = transform.Find("CannonPivot");
         Init();
     }
 
