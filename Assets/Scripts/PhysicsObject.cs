@@ -65,14 +65,6 @@ public class PhysicsObject : MonoBehaviour {
         //InvokeRepeating("PrintCurrentVelo", 0f, 1f);
     }
 
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            ApplyForce(PhysicsConstants.KinematicEnergy(mass, new Vector2(10f, 10f)));
-        }
-    }
-
     void FixedUpdate()
     {
         PhysicsUpdate(Time.fixedDeltaTime);

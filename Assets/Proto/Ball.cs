@@ -4,11 +4,10 @@ using System.Collections;
 [RequireComponent(typeof(SpriteRenderer), typeof(PhysicsObject))]
 public class Ball : MonoBehaviour {
 
-    PhysicsObject po;
+    public PhysicsObject po;
 
     void Awake() {
         po = GetComponent<PhysicsObject>();
-        Time.timeScale = 2.0f;
     }
     
     void OnTriggerEnter2D(Collider2D col) {
@@ -19,9 +18,14 @@ public class Ball : MonoBehaviour {
             if (col.CompareTag("Finish")) {
                 // Win
                 Debug.Log("Victory!");
+                po.mass = 0;
+                po.enabled = false;
+                GameManager.Instance.RoundOver(true);
             } else if (col.CompareTag("Respawn")) {
                 // Lose
                 Debug.Log("Loss!");
+                GameManager.Instance.RoundOver(false);
+                Destroy(gameObject);
             }
         }
     }

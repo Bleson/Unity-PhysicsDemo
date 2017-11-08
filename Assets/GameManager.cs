@@ -4,7 +4,6 @@ using System.Collections;
 
 
 //Turn states: Turn going on (gets inputs), turn ended (wait for projectile to fly), game over (menu)
-
 public class GameManager : Singleton<GameManager> {
     protected GameManager() { }
 
@@ -17,27 +16,34 @@ public class GameManager : Singleton<GameManager> {
 
     GameState gameState = GameState.Turn;
     int playerTurn = 0;
-    public Tank[] players;
+    int tries = 3;
 
     public TextDisplay txtDisplay;
+    public GameObject playerInputMenu;
 
     [ContextMenu("TestFunction")]
     void Test()
     {
-        DeclareWinner(0);
+
     }
 
     void Start()
     {
+        foreach (var item in FindObjectsOfType<Ball>()) {
+            item.po.enabled = false;
+        }
+        txtDisplay.UpdateTextSimple("PLAY!!!!");
+        Time.timeScale = 3.0f;
+
+
         //players = GameObject.FindObjectsOfType<Tank>();
     }
 
-	void Update () 
+    void Update () 
     {
         switch (gameState)
         {
             case GameState.Turn:
-                GetTurnInput();
                 break;
             case GameState.WaitProjectile:
                 break;
@@ -49,30 +55,42 @@ public class GameManager : Singleton<GameManager> {
         }
 	}
 
-    void GetTurnInput()
+    public void GetTurnInput(int command)
     {
-        if (Input.GetKey(KeyCode.A))
-        {
-            players[playerTurn].RotateCannon();
-        }
-        if (Input.GetKey(KeyCode.D))
-        {
-            players[playerTurn].RotateCannon(false);
-        }
-        if (Input.GetKey(KeyCode.W))
-        {
-            players[playerTurn].AddForce();
-        }
-        if (Input.GetKey(KeyCode.S))
-        {
-            players[playerTurn].AddForce(false);
-        }
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            players[playerTurn].Shoot();
-            EndTurn();
+        switch (command) {
+            case 0:
+                //Dropdabase
+                DropBall();
+                break;
+            case 1:
+                MoveBall(1);
+                //Move to right
+                break;
+            case -1:
+                MoveBall(-1);
+                //Move to left
+                break;
+            default:
+                break;
         }
     }
+
+    void DropBall() 
+    {
+        foreach (var item in FindObjectsOfType<Ball>()) {
+            item.po.enabled = true;
+        }
+        playerInputMenu.SetActive(false);
+    }
+
+    void MoveBall(float dir) {
+        foreach (var item in FindObjectsOfType<Ball>()) {
+            item.transform.position = new Vector3(
+                Mathf.Clamp(item.transform.position.x + dir * 0.5f, -2.5f, 2.5f),
+                item.transform.position.y);
+        }
+    }
+
 
     void GetMenuInput()
     {
@@ -84,10 +102,7 @@ public class GameManager : Singleton<GameManager> {
 
     void NewGame()
     {
-        foreach (Tank t in players)
-        {
-            t.Init();
-        }
+        //Spawn new ball
         NextTurn();
     }
 
@@ -96,63 +111,26 @@ public class GameManager : Singleton<GameManager> {
         gameState = GameState.WaitProjectile;
     }
 
-    internal void ProjectileHit()
-    {
-        NextTurn();
-    }
-
     void NextTurn()
     {
-        if (Winner())
-        {
+        playerInputMenu.SetActive(true);
+        gameState = GameState.Menu;
+        if (playerTurn == tries) {
+            txtDisplay.UpdateTextSimple("OUT OF TRIES NEW GAME?");
             return;
         }
-
-        if (playerTurn == players.Length - 1)
-        {
-            playerTurn = 0;
-        }
-        else
-            playerTurn++;
-
-        txtDisplay.UpdateTextSimple("P" + (playerTurn + 1) + " TURN");
+        txtDisplay.UpdateTextSimple("OUT OF TRIES TRY AGAIN");
         gameState = GameState.Turn;
     }
 
-    int WinnerNumber()
-    {
-        int playerAlive = -1;
-        for (int i = 0; i < players.Length; i++)
-        {
-            if (players[i].Alive())
-            {
-                if (playerAlive == -1)
-                {
-                    playerAlive = i;
-                }
-                else
-                {
-                    return -1;
-                }
-            }
-        }
-        return playerAlive;
-    }
+    public void RoundOver(bool won) {
+        if (won) {
+            txtDisplay.UpdateTextSimple("YOU WON");
+            gameState = GameState.Menu;
 
-    bool Winner()
-    {
-        int winner = WinnerNumber();
-        if (winner != -1)
-        {
-            DeclareWinner(winner);
-            return true;
+        } else {
+            NextTurn();
         }
-        return false;
-    }
 
-    void DeclareWinner(int winner)
-    {
-        gameState = GameState.Menu;
-        txtDisplay.UpdateTextSimple("P" + (winner + 1) + " WINS\nPRESS SPACE");
     }
 }

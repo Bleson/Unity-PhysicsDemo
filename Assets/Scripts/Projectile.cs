@@ -48,7 +48,7 @@ public class Projectile : MonoBehaviour {
 
     void Destroy()
     {
-        GameManager.Instance.ProjectileHit();
+        //GameManager.Instance.ProjectileHit();
         Destroy(gameObject);
     }
 
